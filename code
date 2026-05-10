@@ -1,0 +1,120 @@
+import time
+import sys
+
+# Increase limit for deep recursion on large sorted datasets
+sys.setrecursionlimit(3000)
+
+# 1. Selection Sort 
+def selection_logic(collection):
+    length = len(collection)
+    outer = 0
+    while outer < length:
+        minimum = outer
+        inner = outer + 1
+        while inner < length:
+            if collection[inner] < collection[minimum]:
+                minimum = inner
+            inner += 1
+        # Perform swap
+        collection[outer], collection[minimum] = collection[minimum], collection[outer]
+        outer += 1
+    return collection
+
+# 2. Bubble Sort 
+def bubble_logic(collection):
+    n = len(collection)
+    for i in range(n):
+        # Optimization: flag to stop if no swaps happen
+        changed = False
+        for j in range(0, n - i - 1):
+            if collection[j] > collection[j + 1]:
+                collection[j], collection[j + 1] = collection[j + 1], collection[j]
+                changed = True
+        if not changed:
+            break
+    return collection
+
+# 3. Quick Sort 
+def quick_logic(collection):
+    if len(collection) <= 1:
+        return collection
+    
+    # Selecting the first element as the pivot
+    pivot_val = collection[0]
+    # Partitioning into two lists
+    lower_group = [item for item in collection[1:] if item <= pivot_val]
+    higher_group = [item for item in collection[1:] if item > pivot_val]
+    
+    return quick_logic(lower_group) + [pivot_val] + quick_logic(higher_group)
+
+# 4. Merge Sort 
+def merge_logic(collection):
+    if len(collection) > 1:
+        boundary = len(collection) // 2
+        left_side = collection[:boundary]
+        right_side = collection[boundary:]
+
+        merge_logic(left_side)
+        merge_logic(right_side)
+
+        l_idx = r_idx = m_idx = 0
+        
+        while l_idx < len(left_side) and r_idx < len(right_side):
+            if left_side[l_idx] < right_side[r_idx]:
+                collection[m_idx] = left_side[l_idx]
+                l_idx += 1
+            else:
+                collection[m_idx] = right_side[r_idx]
+                r_idx += 1
+            m_idx += 1
+
+        while l_idx < len(left_side):
+            collection[m_idx] = left_side[l_idx]
+            l_idx += 1
+            m_idx += 1
+
+        while r_idx < len(right_side):
+            collection[m_idx] = right_side[r_idx]
+            r_idx += 1
+            m_idx += 1
+    return collection
+
+# --- execution and performance testing --- 
+
+def run_performance_test(label, sorting_algorithm, source_data):
+    total_duration = 0
+    for _ in range(3):
+        data_snapshot = list(source_data) 
+        start_marker = time.time()
+        sorting_algorithm(data_snapshot)
+        end_marker = time.time()
+        total_duration += (end_marker - start_marker)
+    
+    avg_duration = total_duration / 3
+    print(f"{label} -> Result: {avg_duration}")
+
+
+sets = [
+    [1, 2, 3, 4, 5],
+    [5, 4, 3, 2, 1],
+    list(range(1, 101)),
+    list(range(100, 0, -1))
+]
+tags = ["5-Sorted", "5-Reverse", "100-Sorted", "100-Reverse"]
+
+# Output format
+print("=== SELECTION SORT DATA ===")
+for i in range(4):
+    run_performance_test(tags[i], selection_logic, sets[i])
+
+print("\n=== BUBBLE SORT DATA ===")
+for i in range(4):
+    run_performance_test(tags[i], bubble_logic, sets[i])
+
+print("\n=== QUICK SORT DATA ===")
+for i in range(4):
+    run_performance_test(tags[i], quick_logic, sets[i])
+
+print("\n=== MERGE SORT DATA ===")
+for i in range(4):
+    run_performance_test(tags[i], merge_logic, sets[i])
